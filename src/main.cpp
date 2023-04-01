@@ -113,8 +113,11 @@ void initWifi()
 
       Serial.print(WiFi.SSID(i) + ", "); //Show available networks
 
-      if(WiFi.SSID(i) == "B100" || WiFi.encryptionType(i) == WIFI_AUTH_OPEN) //Connect to the desired router (i guess we don't need something more complicated than this) 
+      if(WiFi.SSID(i) == "Grota")
+      //if(WiFi.SSID(i) == "B100" || WiFi.encryptionType(i) == WIFI_AUTH_OPEN) //Connect to the desired router (i guess we don't need something more complicated than this) 
       {
+
+        pass = "oPnA1912";
 
         int x = 0;        
         WiFi.begin(WiFi.SSID(i).c_str(), pass.c_str());
@@ -165,17 +168,20 @@ String fetchData(String url)
 
       int status = c.GET();
 
-      if(status != 200)
+      if(status <= 0)
       {
         Serial.println("Error " + status);
+        c.end();
         return "Unable to fetch data due to an error";
       }
       else
       {
-        return c.getString();
+        String data = c.getString();
+        Serial.println(data);
+        c.end();
+        return data;
       }
 
-      c.end();
 
 }
 
@@ -370,7 +376,7 @@ void execute(String payload)
     const char* url = doc["url"];
     String data = fetchData(url);
 
-    StaticJsonDocument<1000> json;
+    DynamicJsonDocument json(12288);
 
     DeserializationError error = deserializeJson(json, data);
 
@@ -387,11 +393,12 @@ void execute(String payload)
     int x = 0;
     int y = 0;
 
-    for(int i = 0; i < doc["data"].size(); i++)
+    for(int i = 0; i < json["data"].size(); i++)
     {
       
-      x = doc["data"][i]["x"];
-      y = doc["data"][i]["y"];
+      x = json["data"][i]["x"];
+      y = json["data"][i]["y"];
+ 
       display.drawPixel(x, y, BLACK);
 
       nr_pixels++;
@@ -497,28 +504,12 @@ void loop() {
 
         if(receivedValue.length() > 0)
         {
-
-          String payload;
-
-          ////////////// Test JSON
-          StaticJsonDocument<192> in;
-
-          in["action"] = "setText";
-          in["id"] = "0";
-
-          JsonArray text = in.createNestedArray("text");
-          text.add("cascaval");
-          text.add("rapita");
-          text.add("salata");
-
-          serializeJson(in, payload);
-          ///////////////
           
           blinkLED(21, 3);
 
-          Serial.println(payload.c_str());
+          Serial.println(receivedValue.c_str());
 
-          execute(payload.c_str());
+          execute(receivedValue.c_str());
 
         }
 
@@ -526,7 +517,6 @@ void loop() {
 
       }
 
-      //scroll(receivedValue); //Scroll indiferent de conditiile de mai sus
       scroll(receivedValue);
 
     }
