@@ -300,7 +300,7 @@ static size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *use
 
 /**
  * Executes commands based on the JSON query it has received from the connected device
- * @param doc the JSON document received as a string (already parsed)
+ * @param payload the JSON string
  * 
  * This function also handles interaction with the hardware,
  * and at the end sends a JSON encoded response back to the connected device.
@@ -376,7 +376,7 @@ void execute(String payload)
     const char* url = doc["url"];
     String data = fetchData(url);
 
-    DynamicJsonDocument json(12288);
+    DynamicJsonDocument json(24576);
 
     DeserializationError error = deserializeJson(json, data);
 
